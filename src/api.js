@@ -1,7 +1,3 @@
-import Axios from 'axios'
-
-const api = Axios.create({
-    baseURL: 'http://10.0.2.2:3000'
-});
+const api = '192.168.15.13';
 
 export default api;
