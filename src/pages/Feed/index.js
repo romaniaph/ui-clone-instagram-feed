@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, FlatList } from 'react-native';
 
 import LazyImage from '../../components/LazyImage';
@@ -11,24 +11,25 @@ export default function Feed() {
     const [page, setPage] = useState(1);
     const [loading, setLoading] = useState(false)
     const [refreshing, setRefreshing] = useState(false)
-
+    const [viewable, setViewable] = useState([]);
+    const [total, setTotal] = useState(0);
 
     async function loadPage(pageNumber = page, shouldRefresh = false) {
+        if (pageNumber === total) return;
+        if (loading) return;
 
         setLoading(true);
 
         const response = await fetch(`http://${api}:3000/feed?_expand=author&_limit=5&_page=${pageNumber}`);
+
+        const totalItems = await response.headers.get('X-Total-Count');
         const data = await response.json();
-        const totalItems = response.headers.get('X-Total-Count');
+
+        setLoading(false);
+        setTotal(Math.floor(totalItems / 4));
+        setPage(pageNumber + 1);
 
         setFeed(shouldRefresh ? data : [...feed, ...data]);
-        if (pageNumber > 3)
-            setPage(1);
-        else
-            setPage(page + 1)
-
-        setLoading(true);
-
     }
 
     async function refreshList() {
@@ -40,19 +41,28 @@ export default function Feed() {
     }
 
     useEffect(() => {
-
         loadPage();
+    }, []);
+
+    const handleViewableChanged = useCallback(({ changed }) => {
+        setViewable(changed.map(({ item }) => item.id));
     }, []);
 
     return (
         <View>
             <FlatList
+                key="list"
+                data={feed}
+                keyExtractor={item => String(item.id)}
+                onViewableItemsChanged={handleViewableChanged}
+                viewabilityConfig={{
+                    viewAreaCoveragePercentThreshold: 10,
+                }}
+                showsVerticalScrollIndicator={false}
                 onRefresh={refreshList}
                 refreshing={refreshing}
-                data={feed}
-                keyExtractor={post => String(post.id + Math.random())}
-                onEndReached={() => loadPage()}
                 onEndReachedThreshold={0.1}
+                onEndReached={() => loadPage()}
                 ListFooterComponent={loading && <Loading />}
                 renderItem={({ item }) => (
                     <Post>
@@ -61,7 +71,12 @@ export default function Feed() {
                             <Name>{item.author.name}</Name>
                         </Header>
 
-                        <LazyImage aspectRatio={item.aspectRatio} source={{ uri: item.image }} smallSource={{ uri: item.small }} />
+                        <LazyImage
+                            aspectRatio={item.aspectRatio}
+                            shouldLoad={viewable.includes(item.id)}
+                            smallSource={{ uri: item.small }}
+                            source={{ uri: item.image }}
+                        />
 
                         <Description>
                             <Name>{item.author.name}</Name> {item.description}
