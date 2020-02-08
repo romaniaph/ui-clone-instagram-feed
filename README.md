@@ -6,7 +6,7 @@
 - React — a library to build web interfaces.
 - React Native — the best parts of native development with React.
 - Styled Components — CSS-in-JS.
-- JSON-Server — a json file as fake back-end.
+- JSON-Server — a json file as back-end.
 - Infinty Scroll.
 - Preload blurred images.
 - Load images on scroll.
