@@ -14,7 +14,7 @@ const Routes = createAppContainer(
         defaultNavigationOptions: {
             headerTitle: () => (<Image source={logo} />),
             headerStyle: {
-                backgroundColor: '#f5f5f5'
+                backgroundColor: '#f5f5f5',
             }
         }
     })
