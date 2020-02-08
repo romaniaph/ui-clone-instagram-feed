@@ -43,3 +43,4 @@ With npm or yarn installed in your machine.
   ```sh
    yarn server
    ```
+**JSON-Server**: by [Rocketseat](https://github.com/rocketseat)
